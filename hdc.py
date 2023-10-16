@@ -21,19 +21,19 @@ class HDC:
     
     @classmethod
     def bind(cls,x1,x2):
-        # (x1+x2) > (K/2)
-        return 1 * (np.add(x1, x2) >= 1)
+        # XOR(x1, x2)
+        return np.bitwise_xor(x1, x2)
         # raise Exception("bind two hypervectors together") 
 
     @classmethod
     def bind_all(cls, xs):
-        return 1 * (np.sum(xs, axis=0) >= (len(xs) / 2))
+        return np.bitwise_xor.reduce(xs)
         # raise Exception("convenience function. bind together a list of hypervectors") 
 
     @classmethod
     def bundle(cls,xs):
-        # XOR(xs)
-        return np.bitwise_xor.reduce(xs)
+        # (x1+x2) > (K/2)
+        return 1 * (np.sum(xs, axis=0) >= (len(xs) / 2))
         # raise Exception("bundle together xs, a list of hypervectors") 
           
 
@@ -120,7 +120,7 @@ def make_word(letter_codebook, word):
     for i, letter in enumerate(word):
         vec = HDC.permute(letter_codebook.get(letter), i)
         res.append(vec)
-    return HDC.bundle(res)
+    return HDC.bind_all(res)
     # raise Exception("make a word using the letter codebook") 
     
 def monte_carlo(fxn,trials):

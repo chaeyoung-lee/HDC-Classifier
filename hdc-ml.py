@@ -13,40 +13,67 @@ class MNISTClassifier:
 
     def __init__(self):
         self.classifier = HDItemMem()
-        raise Exception("initialize other stuff here")
-
- 
+        self.codebook = HDCodebook("pixels")
+        for i in range(MAX):
+            self.codebook.add('x' + str(i))
+            self.codebook.add('y' + str(i))
+        # self.codebook.add('B')
+        # self.codebook.add('W')
+        # raise Exception("initialize other stuff here")
 
     def encode_coord(self,i,j):
-        raise Exception("encode a coordinate in the image as a hypervector")
+        hv_x = self.codebook.get('x' + str(i))
+        hv_y = self.codebook.get('y' + str(j))
+        return HDC.bind(hv_x, hv_y)
+        # raise Exception("encode a coordinate in the image as a hypervector")
 
     def encode_pixel(self, i, j, v):
-        raise Exception("encode a pixel in the image as a hypervector")
+        hv = self.encode_coord(i, j)
+        if v > 0: # white
+            hv = HDC.permute(hv, 1)
+        return hv
+        # key_v = 'B' if v == 0 else 'W'
+        # hv_v = HDC.permute(self.codebook.get(key_v), 2)
+        # return HDC.bind(self.encode_coord(i, j), hv_v)
+        # raise Exception("encode a pixel in the image as a hypervector")
 
     def encode_image(self,image):
+        hv = []
         for i,j in itertools.product(range(MAX),range(MAX)):
             v = image.getpixel((i,j))
-            print("TODO: do something with encoded pixel value")
-            self.encode_pixel(i,j,v)
-
-        raise Exception("return hypervector encoding of image")
+            hv.append(self.encode_pixel(i,j,v))
+        return HDC.bundle(hv)
+        # raise Exception("return hypervector encoding of image")
 
     def decode_pixel(self, image_hypervec, i, j):
-        raise Exception("retrieve the value of the pixel at coordinate i,j in the image hypervector")
-        
+        hv = self.encode_coord(i, j)
+        hv_permuted = HDC.permute(hv, 1)
+        if HDC.dist(hv, image_hypervec) < HDC.dist(hv_permuted, image_hypervec):
+            return 0
+        else:
+            return 255
+        # hv = HDC.bind(image_hypervec, self.encode_coord(i, j))
+        # hv = HDC.permute(hv, -2)
+        # return self.codebook.wta(hv)[0]
+        # raise Exception("retrieve the value of the pixel at coordinate i,j in the image hypervector")
 
     def decode_image(self, image_hypervec):
         im = PIL.Image.new(mode="1", size=(MAX, MAX))
         for i,j in list(itertools.product(range(MAX),range(MAX))):
             v = self.decode_pixel(image_hypervec,i,j)
+            # v = 0 if v == 'B' else 255
             im.putpixel((i,j),v)
         return im
 
 
     def train(self,train_data):
         for image,label in tqdm.tqdm(list(train_data)):
-            raise Exception("do something with the image,label pair from the dataset") 
-            
+            hv_image = self.encode_image(image)
+            if not self.classifier.has(label):
+                self.classifier.item_mem[label] = hv_image
+            else:
+                self.classifier.item_mem[label] = HDC.bundle(self.classifier.get(label), hv_image)
+            # raise Exception("do something with the image,label pair from the dataset") 
 
     def classify(self,image):
         raise Exception("classify an image using your classifier and return the label and distance")
@@ -115,5 +142,5 @@ def test_generative_model():
 
 if __name__ == '__main__':
     test_encoding()
-    test_classifier()
-    test_generative_model()
+    # test_classifier()
+    # test_generative_model()

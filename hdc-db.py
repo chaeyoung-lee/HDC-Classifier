@@ -23,9 +23,9 @@ class HDDatabase:
     def encode_row(self, fields):
         res = []
         for k, v in fields.items():
-            bundled_hv = HDC.bundle([self.encode_string(k), self.encode_string(v)])
-            res.append(bundled_hv)
-        return HDC.bind_all(res)
+            hv = HDC.bind(self.encode_string(k), self.encode_string(v))
+            res.append(hv)
+        return HDC.bundle(res)
         # raise Exception("translate a dictionary of field-value pairs to a hypervector") 
         
     def decode_row(self, hypervec):
@@ -33,7 +33,7 @@ class HDDatabase:
         keys = ['Number', 'Digimon', 'Stage', 'Type', 'Attribute', 'Memory', 'Equip Slots', 'Lv 50 HP', 'Lv50 SP', 'Lv50 Atk', 'Lv50 Def', 'Lv50 Int', 'Lv50 Spd']
         for key in keys:
             key_hv = self.encode_string(key)
-            inverted_hv = HDC.bundle([key_hv, hypervec])
+            inverted_hv = HDC.bind(key_hv, hypervec)
             value = self.codebook.wta(inverted_hv)[0]
             res[key] = value
         return res
@@ -51,7 +51,7 @@ class HDDatabase:
     def get_value(self,key, field, ret_dist=False):
         hv = self.db.get(key)
         field_hv = self.encode_string(field)
-        return self.codebook.wta(HDC.bundle([field_hv, hv]))[0]
+        return self.codebook.wta(HDC.bind(field_hv, hv))[0]
         # raise Exception("given a primary key and a field, get the value assigned to the field")
         
     def get_matches(self, field_value_dict, threshold=0.4):
@@ -61,7 +61,7 @@ class HDDatabase:
         
     def get_analogy(self, target_key, other_key, target_value):
         field = self.get_value(target_key, target_value)
-        return self.codebook.wta(HDC.bundle([self.db.get(other_key), self.encode_string(field)]))
+        return self.codebook.wta(HDC.bind(self.db.get(other_key), self.encode_string(field)))
         # raise Exception("analogy query")
 
 
