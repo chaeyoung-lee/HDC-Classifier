@@ -8,6 +8,8 @@ import PIL
 import math
 
 MAX = 26
+DEBUG = 1
+TRAIN_STOP = 300
 
 class MNISTClassifier:
 
@@ -17,8 +19,6 @@ class MNISTClassifier:
         for i in range(MAX):
             self.codebook.add('x' + str(i))
             self.codebook.add('y' + str(i))
-        # self.codebook.add('B')
-        # self.codebook.add('W')
         # raise Exception("initialize other stuff here")
 
     def encode_coord(self,i,j):
@@ -32,9 +32,6 @@ class MNISTClassifier:
         if v > 0: # white
             hv = HDC.permute(hv, 1)
         return hv
-        # key_v = 'B' if v == 0 else 'W'
-        # hv_v = HDC.permute(self.codebook.get(key_v), 2)
-        # return HDC.bind(self.encode_coord(i, j), hv_v)
         # raise Exception("encode a pixel in the image as a hypervector")
 
     def encode_image(self,image):
@@ -52,31 +49,32 @@ class MNISTClassifier:
             return 0
         else:
             return 255
-        # hv = HDC.bind(image_hypervec, self.encode_coord(i, j))
-        # hv = HDC.permute(hv, -2)
-        # return self.codebook.wta(hv)[0]
         # raise Exception("retrieve the value of the pixel at coordinate i,j in the image hypervector")
 
     def decode_image(self, image_hypervec):
         im = PIL.Image.new(mode="1", size=(MAX, MAX))
         for i,j in list(itertools.product(range(MAX),range(MAX))):
             v = self.decode_pixel(image_hypervec,i,j)
-            # v = 0 if v == 'B' else 255
             im.putpixel((i,j),v)
         return im
 
 
     def train(self,train_data):
+        datasets = {}
         for image,label in tqdm.tqdm(list(train_data)):
             hv_image = self.encode_image(image)
-            if not self.classifier.has(label):
-                self.classifier.item_mem[label] = hv_image
-            else:
-                self.classifier.item_mem[label] = HDC.bundle(self.classifier.get(label), hv_image)
-            # raise Exception("do something with the image,label pair from the dataset") 
+            if label not in datasets.keys():
+                datasets[label] = []
+            datasets[label].append(hv_image)
+            
+        for label in datasets.keys():
+            self.classifier.add(label, HDC.bundle(datasets[label]))
+        # raise Exception("do something with the image,label pair from the dataset")
 
     def classify(self,image):
-        raise Exception("classify an image using your classifier and return the label and distance")
+        hv_image = self.encode_image(image)
+        label, dist = self.classifier.wta(hv_image)
+        # raise Exception("classify an image using your classifier and return the label and distance")
         return label,dist
 
     def build_gen_model(self,train_data):
@@ -84,7 +82,6 @@ class MNISTClassifier:
         for image,label in tqdm.tqdm(list(train_data)):
             raise Exception("build generative model") 
             
-
     def generate(self, cat, trials=10):
         gen_hv = self.gen_model[cat]
         raise Exception("generate random image with label <cat> using generative model. Average over <trials> trials.")
@@ -93,7 +90,6 @@ def initialize(N=1000):
     alldata = MNIST(root='data', train=True, download=True)
     dataset = list(map(lambda datum: (datum[0].convert("1"), datum[1]),  \
                 Subset(alldata, range(N))))
-
     train_data, test_data = torch.utils.data.random_split(dataset, [0.6,0.4])
     HDC.SIZE = 10000
     classifier = MNISTClassifier()
@@ -118,6 +114,7 @@ def test_classifier():
     correct, count = 0, 0
     for image, category in (pbar := tqdm.tqdm(test_data)):
         cat, dist = classifier.classify(image)
+        print(cat, category)
         if cat == category:
             correct += 1
         count += 1
@@ -142,5 +139,5 @@ def test_generative_model():
 
 if __name__ == '__main__':
     test_encoding()
-    # test_classifier()
+    test_classifier()
     # test_generative_model()

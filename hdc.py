@@ -10,35 +10,38 @@ class HDC:
 
     @classmethod
     def rand_vec(cls):
+        # Binary vectors
         return np.random.randint(2, size=HDC.SIZE)
         # raise Exception("generate atomic hypervector with size HDC.SIZE") 
     
     @classmethod
     def dist(cls,x1,x2):
-        # 1/N sum XOR(x1,x2)
+        # How many bits are different: 1/N sum XOR(x1,x2)
         return np.divide(np.sum(np.bitwise_xor(x1, x2)), HDC.SIZE)
         # raise Exception("hamming distance between hypervectors") 
     
     @classmethod
     def bind(cls,x1,x2):
-        # XOR(x1, x2)
+        # XOR
         return np.bitwise_xor(x1, x2)
         # raise Exception("bind two hypervectors together") 
 
     @classmethod
     def bind_all(cls, xs):
+        # XOR for array
         return np.bitwise_xor.reduce(xs)
         # raise Exception("convenience function. bind together a list of hypervectors") 
 
     @classmethod
     def bundle(cls,xs):
-        # (x1+x2) > (K/2)
+        # Majority vote: (x1+x2) > (K/2)
         return 1 * (np.sum(xs, axis=0) >= (len(xs) / 2))
         # raise Exception("bundle together xs, a list of hypervectors") 
           
 
     @classmethod
     def permute(cls,x,i):
+        # Bit shifting
         return np.roll(x, i)
         # raise Exception("permute x by i, where i can be positive or negative") 
     
