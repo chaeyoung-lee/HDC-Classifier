@@ -1,1 +1,1 @@
-# HDC-Classifier
+# MNIST Classifier
