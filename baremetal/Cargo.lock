@@ -12,6 +12,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "baremetal"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "embassy",
+ "embedded-hal",
+ "panic-halt",
+]
+
+[[package]]
 name = "bitfield"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -48,6 +59,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "embassy"
+version = "0.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "902e14c8b21b6f56f8d21a1c5de34aa3423acc61b136e47ec591d0758c3e77be"
 
 [[package]]
 name = "embedded-hal"
@@ -121,15 +138,6 @@ name = "semver-parser"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-
-[[package]]
-name = "stm32f4"
-version = "0.1.0"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "panic-halt",
-]
 
 [[package]]
 name = "syn"
