@@ -15,7 +15,7 @@ def initialize(N=1000):
     dataset = list(map(lambda datum: (datum[0].convert("1"), datum[1]),  \
                 Subset(alldata, range(N))))
     train_data, test_data = torch.utils.data.random_split(dataset, [0.6,0.4])
-    print("================ MNIST Data Loaded ================")
+    print("================ MNIST Data Loaded ===============")
     position_table = np.random.randint(2, size=(IMAGE_SIZE * 2, N_DIM))
     return train_data, test_data, position_table
 
