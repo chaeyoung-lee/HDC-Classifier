@@ -5,7 +5,9 @@
 
 #define IMAGE_SIZE 28
 #define N_CLASS 10
-#define N_DIM 1000
+#define N_DIM 10000
+#define LOAD 1
+#define STORE 1
 
 typedef struct Image {
     int pixels[IMAGE_SIZE][IMAGE_SIZE];
@@ -14,6 +16,8 @@ typedef struct Image {
 
 uint8_t** allocate_table(int x, int y);
 void free_table(uint8_t** table, int rows);
+uint8_t** load_table(char* name, int row, int column);
+void store_table(uint8_t** table, char* name, int row, int column);
 int predict(int image[IMAGE_SIZE][IMAGE_SIZE], uint8_t** position_table, uint8_t** item_memory);
 uint8_t* encode(int image[IMAGE_SIZE][IMAGE_SIZE], uint8_t** position_table);
 void bind(uint8_t* x1, uint8_t* x2, uint8_t* result);
@@ -23,8 +27,25 @@ double distance(uint8_t* x1, uint8_t* x2);
 
 // Main function to test the initialize function
 int main() {
-    uint8_t** position_table = allocate_table(IMAGE_SIZE * 2, N_DIM);
-    uint8_t** item_memory = allocate_table(N_CLASS, N_DIM);
+    // Table for HDC
+    uint8_t** position_table;
+    uint8_t** item_memory;
+
+    // Load array
+    if (LOAD) {
+        position_table = load_table("codebook_56_10000.data", IMAGE_SIZE * 2, N_DIM);
+        item_memory = load_table("model_10_10000.data", IMAGE_SIZE * 2, N_DIM);
+    } else {
+        position_table = allocate_table(IMAGE_SIZE * 2, N_DIM);
+        item_memory = allocate_table(N_CLASS, N_DIM);
+    }
+
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            printf("%d ", item_memory[i][j]);
+        }
+        printf("\n");
+    }
     
     // Capture image, here create a sample image
     Image image;
@@ -38,6 +59,12 @@ int main() {
     // Predict image using position table and item memory
     int predicted_label = predict(image.pixels, position_table, item_memory);
     printf("label: %d\n", predicted_label);
+
+    // Store array
+    if (STORE) {
+        store_table(position_table, "position_table.data", IMAGE_SIZE * 2, N_DIM);
+        store_table(item_memory, "item_memory.data", N_CLASS, N_DIM);
+    }
     
     // Freeing dynamically allocated memory
     free_table(position_table, IMAGE_SIZE * 2);
@@ -72,6 +99,58 @@ void free_table(uint8_t** table, int rows) {
         free(table[i]); // Free each row
     }
     free(table); // Free the array of pointers
+}
+
+// Function to load a table from a binary file
+uint8_t** load_table(char* name, int row, int column) {
+    // Open the binary file for reading
+    FILE* file = fopen(name, "rb");
+    if (!file) {
+        fprintf(stderr, "Failed to open the file for reading.\n");
+        return 0;
+    }
+
+    // Read the dimensions (number of rows and columns) from the file
+    fread(&row, sizeof(int), 1, file);
+    fread(&column, sizeof(int), 1, file);
+
+    // Allocate memory for the 2D array
+    uint8_t** table = (uint8_t**)malloc(row * sizeof(uint8_t*));
+    for (int i = 0; i < row; i++) {
+        table[i] = (uint8_t*)malloc(column * sizeof(uint8_t));
+    }
+
+    // Read the 2D array data from the file
+    for (int i = 0; i < row; i++) {
+        fread(table[i], sizeof(uint8_t), column, file);
+    }
+
+    // Close the file
+    fclose(file);
+
+    return table;
+}
+
+// Function to save a table into a binary file
+void store_table(uint8_t** table, char* name, int row, int column) {
+    // Open a binary file for writing
+    FILE* file = fopen(name, "wb");
+    if (!file) {
+        fprintf(stderr, "Failed to open the file for writing.\n");
+        return ;
+    }
+
+    // Write the dimensions (number of rows and columns) to the file
+    fwrite(&row, sizeof(int), 1, file);
+    fwrite(&column, sizeof(int), 1, file);
+
+    // Write the 2D array data to the file
+    for (int i = 0; i < row; i++) {
+        fwrite(table[i], sizeof(uint8_t), column, file);
+    }
+
+    // Close the file
+    fclose(file);
 }
 
 // Function to predict the class label of given image
