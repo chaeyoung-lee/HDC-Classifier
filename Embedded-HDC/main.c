@@ -15,6 +15,7 @@ typedef struct Image {
 uint8_t** allocate_table(int x, int y);
 void free_table(uint8_t** table, int rows);
 int predict(int image[IMAGE_SIZE][IMAGE_SIZE], uint8_t** position_table, uint8_t** item_memory);
+uint8_t* encode(int image[IMAGE_SIZE][IMAGE_SIZE], uint8_t** position_table);
 void bind(uint8_t* x1, uint8_t* x2, uint8_t* result);
 void bundle(uint8_t** xs, uint8_t* result, int length);
 double distance(uint8_t* x1, uint8_t* x2);
@@ -84,7 +85,7 @@ int predict(int image[IMAGE_SIZE][IMAGE_SIZE], uint8_t** position_table, uint8_t
     uint8_t* encoded_image = encode(image, position_table);
 }
 
-// // Function to encode the image by converting it to a hyperdimensional vector
+// Function to encode the image by converting it to a hyperdimensional vector
 // uint8_t* encode(int image[IMAGE_SIZE][IMAGE_SIZE], uint8_t** position_table) {
 //     uint8_t hv[IMAGE_SIZE * IMAGE_SIZE][N_DIM];
 //     uint8_t hv_image[IMAGE_SIZE * IMAGE_SIZE][N_DIM];
