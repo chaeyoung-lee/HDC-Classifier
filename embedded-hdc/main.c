@@ -7,7 +7,7 @@
 #define N_CLASS 10
 #define N_DIM 10000
 #define LOAD 1
-#define STORE 1
+#define STORE 0
 
 typedef struct Image {
     int pixels[IMAGE_SIZE][IMAGE_SIZE];
@@ -33,8 +33,8 @@ int main() {
 
     // Load array
     if (LOAD) {
-        position_table = load_table("codebook_56_10000.data", IMAGE_SIZE * 2, N_DIM);
-        item_memory = load_table("model_10_10000.data", IMAGE_SIZE * 2, N_DIM);
+        position_table = load_table("model/codebook_56_10000.data", IMAGE_SIZE * 2, N_DIM);
+        item_memory = load_table("model/model_10_10000.data", IMAGE_SIZE * 2, N_DIM);
     } else {
         position_table = allocate_table(IMAGE_SIZE * 2, N_DIM);
         item_memory = allocate_table(N_CLASS, N_DIM);
