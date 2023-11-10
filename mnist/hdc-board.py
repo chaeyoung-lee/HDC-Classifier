@@ -8,7 +8,7 @@ import PIL
 
 IMAGE_SIZE = 28 # MNIST image size
 N_CLASS = 10    # MNIST class label
-N_DIM = 1000    # HV dimension
+N_DIM = 10000    # HV dimension
 
 def initialize(N=1000):
     alldata = MNIST(root='data', train=True, download=True)
@@ -16,8 +16,7 @@ def initialize(N=1000):
                 Subset(alldata, range(N))))
     train_data, test_data = torch.utils.data.random_split(dataset, [0.6,0.4])
     print("================ MNIST Data Loaded ===============")
-    position_table = np.random.randint(2, size=(IMAGE_SIZE * 2, N_DIM))
-    return train_data, test_data, position_table
+    return train_data, test_data
 
 def bind(x1, x2):
     return np.bitwise_xor(x1, x2)
@@ -83,11 +82,12 @@ def test(item_memory, position_table, test_data):
 
 
 def main(mode):
-    train_data, test_data, position_table = initialize()
-    test_encoding(train_data[0][0], position_table)
+    train_data, test_data = initialize()
     
     if mode == 'train':
         print("================ Training Begins ================")
+        position_table = np.random.randint(2, size=(IMAGE_SIZE * 2, N_DIM))
+        test_encoding(train_data[0][0], position_table)
         item_memory = np.random.randint(2, size=(N_CLASS, N_DIM))
         item_memory = train(item_memory, position_table, train_data)
         np.save('model_{}_{}'.format(N_CLASS, N_DIM), item_memory) # save model
@@ -98,8 +98,8 @@ def main(mode):
         test(item_memory, position_table, test_data)
 
     elif mode == 'test':
-        item_memory = np.load('model_{}_{}.npy'.format(N_CLASS, N_DIM))
-        position_table = np.load('codebook_{}_{}.npy'.format(N_CLASS, N_DIM))
+        item_memory = np.load('../embedded-hdc/model/model_{}_{}.npy'.format(N_CLASS, N_DIM))
+        position_table = np.load('../embedded-hdc/model/codebook_{}_{}.npy'.format(IMAGE_SIZE * 2, N_DIM))
         test(item_memory, position_table, test_data)
 
     return 0
@@ -111,5 +111,5 @@ def test_encoding(image, position_table):
     result.save("sample0_rec.png")
 
 if __name__ == '__main__':
-    mode = 'train'
+    mode = 'test'
     main(mode)
